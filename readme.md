@@ -2,7 +2,7 @@
 
 A pytorch implementation of __Instant-NSR__, fast surface reconstructor as described in __Human Performance Modeling and Rendering via Neural Animated Mesh__.
 
-<img src="assets/teaser.jpg" height="342"/> 
+<img src="assets/pipeline.jpg" height="300"/> 
 Based on dense multi-view input, our approach enables efficient and high-quality reconstruction, compression, and rendering of human performances. It supports 4D photo-real content playback for various immersive experiences of human performances in virtual and augmented reality.
 
 This repo helps us to reconstruct 3D models from multi-view images in ~10 mins. Free to run our code!
