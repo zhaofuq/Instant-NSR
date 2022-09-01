@@ -1,8 +1,8 @@
 # Instant-NSR (Pytorch)
 
-A pytorch implementation of __Instant-NSR__, fast surface reconstructor as described in __Human Performance Modeling and Rendering via Neural Animated Mesh__.
+A Pytorch implementation of __Instant-NSR__, fast surface reconstructor as described in __Human Performance Modeling and Rendering via Neural Animated Mesh__.
 
-<img src="assets/pipeline.jpg" height="300"/> 
+<img src="assets/pipeline.jpg" height="260"/> 
 Based on dense multi-view input, our approach enables efficient and high-quality reconstruction, compression, and rendering of human performances. It supports 4D photo-real content playback for various immersive experiences of human performances in virtual and augmented reality.
 
 This repo helps us to reconstruct 3D models from multi-view images in ~10 mins. Free to run our code!
@@ -21,8 +21,8 @@ Tested on Ubuntu with torch 1.10 & CUDA 11.4 on RTX 3090.
 
 # Usage
 
-We use the same data format as nerf and instant-ngp, e.g. [fox](https://github.com/NVlabs/instant-ngp/tree/master/data/nerf/fox). 
-Please download and put them under `Your Own Path` and follow clomap calibration.
+We use the same data format as nerf and instant-ngp, and we provide a test dataset [dance](https://drive.google.com/drive/folders/1Tfw4bXUG6n5VcVFbWXTkXnEfLdbZ_pB-?usp=sharing) which is on google driver. 
+Please download and put it under `{INPUTS}/dance` and then run our Instant-NSR code.
 
 First time running will take some time to compile the CUDA extensions.
 
@@ -30,13 +30,13 @@ First time running will take some time to compile the CUDA extensions.
 Train your own models, you can run following shell:
 ```bash
 # Instant-NSR Training
-CUDA_VISIBLE_DEVICES=${CUDA_DEVICE} python train_nerf.py "${INPUTS}/${dir}"  --workspace "${WORKSAPCE}" --downscale 1 --network sdf
+CUDA_VISIBLE_DEVICES=${CUDA_DEVICE} python train_nerf.py "${INPUTS}/dance"  --workspace "${WORKSAPCE}" --downscale 1 --network sdf
 ```
 
 Then, you can extract surface from the trained network model by: 
 ```bash
 # Instant-NSR Mesh extraction
-CUDA_VISIBLE_DEVICES=${CUDA_DEVICE} python train_nerf.py "${INPUTS}/${dir}"  --workspace "${WORKSAPCE}" --downscale 1 --network sdf -mode mesh
+CUDA_VISIBLE_DEVICES=${CUDA_DEVICE} python train_nerf.py "${INPUTS}/dance"  --workspace "${WORKSAPCE}" --downscale 1 --network sdf -mode mesh
 
 ```
 
@@ -44,8 +44,12 @@ Or, you can render target view with spefic camera view:
 ```bash
 
 # Instant-NSR Rendering
-CUDA_VISIBLE_DEVICES=${CUDA_DEVICE} python train_nerf.py "${INPUTS}/${dir}"  --workspace "${WORKSAPCE}" --downscale 1 --network sdf -mode render
+CUDA_VISIBLE_DEVICES=${CUDA_DEVICE} python train_nerf.py "${INPUTS}/dance"  --workspace "${WORKSAPCE}" --downscale 1 --network sdf -mode render
 ```
+
+# Results
+Here are some reconstruction results from our Instant-NSR code:
+<img src="assets/results.gif" height="400"/> 
 
 # Acknowledgement
 
