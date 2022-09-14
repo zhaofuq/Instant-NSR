@@ -21,7 +21,7 @@ Tested on Ubuntu with torch 1.10 & CUDA 11.4 on RTX 3090.
 
 # Usage
 
-We use the same data format as nerf and instant-ngp, and we provide a test dataset [dance](https://drive.google.com/drive/folders/1Tfw4bXUG6n5VcVFbWXTkXnEfLdbZ_pB-?usp=sharing) which is on google driver. 
+We use the same data format as nerf and instant-ngp, and we provide a test dataset [dance](https://drive.google.com/drive/folders/180qoFqABXjBDwW2hHa14A6bmV-Sj1qqJ?usp=sharing) which is on google driver. 
 Please download and put it under `{INPUTS}/dance` and then run our Instant-NSR code.
 
 First time running will take some time to compile the CUDA extensions.
