@@ -1,6 +1,6 @@
 # Instant-NSR (Pytorch)
 
-A Pytorch implementation of __Instant-NSR__, fast surface reconstructor as described in __Human Performance Modeling and Rendering via Neural Animated Mesh__.
+A Pytorch implementation of __Instant-NSR__, fast surface reconstructor as described in [__Human Performance Modeling and Rendering via Neural Animated Mesh__](https://arxiv.org/pdf/2209.08468.pdf).
 
 <img src="assets/pipeline.jpg" height="260"/> 
 Based on dense multi-view input, our approach enables efficient and high-quality reconstruction, compression, and rendering of human performances. It supports 4D photo-real content playback for various immersive experiences of human performances in virtual and augmented reality.
