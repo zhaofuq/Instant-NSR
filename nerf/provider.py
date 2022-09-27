@@ -26,7 +26,7 @@ def nerf_matrix_to_ngp(pose, aabb, bound):
     scale = max(0.000001,max(max(abs(float(aabb[1][0])-float(aabb[0][0])),
                                 abs(float(aabb[1][1])-float(aabb[0][1]))),
                                 abs(float(aabb[1][2])-float(aabb[0][2]))))
-    scale =  4.0 * bound / scale
+    scale =  2.0 * bound / scale
 
     offset = [((float(aabb[1][0]) + float(aabb[0][0])) * 0.5) * -scale,
                 ((float(aabb[1][1]) + float(aabb[0][1])) * 0.5) * -scale, 
