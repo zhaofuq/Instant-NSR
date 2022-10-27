@@ -94,28 +94,28 @@ class NeRFDataset(Dataset):
              
 
         # load intrinsics
+        cx = (transform['cx'] / downscale) if 'cx' in transform else (self.W / 2)
+        cy = (transform['cy'] / downscale) if 'cy' in transform else (self.H / 2)
+
         if 'fl_x' in transform or 'fl_y' in transform:
             fl_x = (transform['fl_x'] if 'fl_x' in transform else transform['fl_y']) / downscale
             fl_y = (transform['fl_y'] if 'fl_y' in transform else transform['fl_x']) / downscale
+            self.intrinsic = np.array([[fl_x, 0., cx], [0., fl_y, cy], [0., 0., 1.]])
         elif 'camera_angle_x' in transform or 'camera_angle_y' in transform:
             # blender, assert in radians. already downscaled since we use H/W
             fl_x = self.W / (2 * np.tan(transform['camera_angle_x'] / 2)) if 'camera_angle_x' in transform else None
             fl_y = self.H / (2 * np.tan(transform['camera_angle_y'] / 2)) if 'camera_angle_y' in transform else None
             if fl_x is None: fl_x = fl_y
             if fl_y is None: fl_y = fl_x
+            self.intrinsic = np.array([[fl_x, 0., cx], [0., fl_y, cy], [0., 0., 1.]])
         else:
-            raise RuntimeError('Failed to load focal length, please check the transforms.json!')
-
-        cx = (transform['cx'] / downscale) if 'cx' in transform else (self.W / 2)
-        cy = (transform['cy'] / downscale) if 'cy' in transform else (self.H / 2)
-        
-        self.intrinsic = np.array([[fl_x, 0., cx], [0., fl_y, cy], [0., 0., 1.]])
+            self.intrinsic = np.array([[0., 0., cx], [0., 0., cy], [0., 0., 1.]])
 
         # load bounding bbox
         try:
             self.aabb = transform['aabb']
         except:
-            aabb_scale = 1.0 #transform['aabb_scale']WW
+            aabb_scale = 1.0 #transform['aabb_scale']
             pts = []
             for f in frames:
                 pts.append(np.array(f['transform_matrix'], dtype=np.float32)[:3,3]) # [4, 4]
@@ -124,8 +124,8 @@ class NeRFDataset(Dataset):
             minxyz=np.min(pts, axis=0) * aabb_scale
             maxxyz=np.max(pts, axis=0) * aabb_scale
 
-            self.aabb = [[maxxyz[0], maxxyz[1], maxxyz[2]],
-                        [minxyz[0], minxyz[1], minxyz[2]]]
+            self.aabb = [[minxyz[0], minxyz[1], minxyz[2]],
+                        [maxxyz[0], maxxyz[1], maxxyz[2]]]
 
         if type == 'test':
             # choose two random poses, and interpolate between.
@@ -155,23 +155,6 @@ class NeRFDataset(Dataset):
             self.intrinsics = np.stack(self.intrinsics, axis=0).astype(np.float32)
 
         elif type == 'fvv':
-            aabb_scale = 1.0
-            pts = []
-            transform_path_train = os.path.join(path, 'transforms.json')
-            with open(transform_path_train, 'r') as f:
-                transform_train = json.load(f)
-            fs = transform_train["frames"]
-            fs = sorted(fs, key=lambda d: d['file_path'])
-
-            for f in fs:
-                pts.append(np.array(f['transform_matrix'], dtype=np.float32)[:3,3]) # [4, 4]
-            pts = np.stack(pts, axis=0).astype(np.float32)
-
-            minxyz=np.min(pts, axis=0) * aabb_scale
-            maxxyz=np.max(pts, axis=0) * aabb_scale
-
-            self.aabb = [[maxxyz[0], maxxyz[1], maxxyz[2]],
-                        [minxyz[0], minxyz[1], minxyz[2]]]
             self.poses = []
             self.images = []
             self.intrinsics = []
