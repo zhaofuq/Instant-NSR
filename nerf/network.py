@@ -16,6 +16,7 @@ class NeRFNetwork(NeRFRenderer):
                  num_layers_color=3,
                  hidden_dim_color=64,
                  cuda_ray=False,
+                 curvature_loss = False,
                  ):
         super().__init__(cuda_ray)
 

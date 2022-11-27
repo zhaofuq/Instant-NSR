@@ -29,6 +29,8 @@ if __name__ == '__main__':
                                                                     enc: use only TCNN encoding for sdf representation, \
                                                                     fp16: use amp mixed precision training for sdf representation,\
                                                                     ff: use fully-fused MLP for sdf representation)")
+    
+    parser.add_argument('--curvature_loss', '--C', action='store_true', help="use curvature loss term, slower but make surface smoother")
 
     #Dataset Settings
     parser.add_argument('--format', type=str, default='colmap', help="dataset format, supports (colmap, blender)")
@@ -62,13 +64,13 @@ if __name__ == '__main__':
         model = NeRFNetwork(
             encoding="phasor", encoding_dir="sphere_harmonics", 
             num_layers=2, hidden_dim=64, geo_feat_dim=15, num_layers_color=3, hidden_dim_color=64, 
-            cuda_ray=opt.cuda_ray,
+            cuda_ray=opt.cuda_ray, curvature_loss = opt.curvature_loss
         )
     else:
         model = NeRFNetwork(
             encoding="hashgrid", encoding_dir="sphere_harmonics", 
             num_layers=2, hidden_dim=64, geo_feat_dim=15, num_layers_color=3, hidden_dim_color=64, 
-            cuda_ray=opt.cuda_ray,
+            cuda_ray=opt.cuda_ray, curvature_loss = opt.curvature_loss
         )
         
     #optimizer
@@ -101,7 +103,8 @@ if __name__ == '__main__':
                 lr_scheduler=scheduler, 
                 scheduler_update_every_step=True, 
                 use_checkpoint='latest', 
-                eval_interval=5)
+                eval_interval=5,
+                )
 
     if opt.mode == 'train':
         train_dataset = NeRFDataset(opt.path, type='train', mode=opt.format, bound=opt.bound)

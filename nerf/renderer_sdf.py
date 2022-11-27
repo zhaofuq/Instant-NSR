@@ -80,11 +80,13 @@ def plot_pointcloud(pc, color=None):
 class NeRFRenderer(nn.Module):
     def __init__(self,
                  cuda_ray=False,
+                 curvature_loss = False
                  ):
         super().__init__()
 
         # extra state for cuda raymarching
         self.cuda_ray = cuda_ray
+        self.curvature_loss = curvature_loss
         if cuda_ray:
             # density grid
             density_grid = torch.zeros([128 + 1] * 3) # +1 because we save values at grid
@@ -233,6 +235,21 @@ class NeRFRenderer(nn.Module):
         gradient_error = (relax_inside_sphere * gradient_error).sum() / (relax_inside_sphere.sum() + 1e-5)
 
         assert (gradient == gradient).all(), 'Nan or Inf found!'
+
+        if self.curvature_loss:
+            # TODO:curvature loss 
+            random_vec = 2.0 * torch.randn_like(normal) - 1.0
+            random_vec_norm = random_vec / (1e-5 + torch.linalg.norm(random_vec, ord=2, dim=-1,  keepdim = True))
+
+            perturbed_pts = new_pts.reshape(-1, 3) + torch.cross(normal, random_vec_norm) * 0.01 * (1.0 - normal_epsilon_ratio) # naively set perturbed points, 
+            perturbed_gradient = self.gradient(perturbed_pts.reshape(-1, 3), bound, 0.005 * (1.0 - normal_epsilon_ratio)).squeeze()
+            perturbed_normal =  perturbed_gradient / (1e-5 + torch.linalg.norm(perturbed_gradient, ord=2, dim=-1,  keepdim = True))
+
+            curvature_error = (torch.sum(normal * perturbed_normal, dim = -1) - 1.0) ** 2
+            curvature_error = (relax_inside_sphere * curvature_error.reshape(N, num_steps)).sum() / (relax_inside_sphere.sum() + 1e-5)
+        else:
+            curvature_error = 0.0
+
         # mix background color
         if bg_color is None:
             bg_color = 1
@@ -242,7 +259,7 @@ class NeRFRenderer(nn.Module):
         depth = depth.reshape(B, N)
         image = image.reshape(B, N, 3)
 
-        return depth, image, normal_map, gradient_error
+        return depth, image, normal_map, gradient_error, curvature_error
 
     def run_cuda(self, rays_o, rays_d, num_steps, bound, upsample_steps, bg_color, cos_anneal_ratio, normal_epsilon_ratio):
         # rays_o, rays_d: [B, N, 3], assumes B == 1
@@ -402,7 +419,7 @@ class NeRFRenderer(nn.Module):
 
         normal_map = normal_map.reshape(B, N, 3)
 
-        return depth, image, normal_map, gradient_error
+        return depth, image, normal_map, gradient_error, 0
 
     def update_extra_state(self, bound, decay=0.95):
         # call before each epoch to update extra states.
@@ -478,13 +495,14 @@ class NeRFRenderer(nn.Module):
             normal = torch.empty((B, N, 3), device=device)
 
             gradient_error = 0.0
+            curvature_error = 0.0 
 
             for b in range(B):
                 head = 0
                 while head < N:
                     tail = min(head + max_ray_batch, N)
 
-                    depth_, image_, normal_, gradient_error_= _run(rays_o[b:b+1, head:tail], rays_d[b:b+1, head:tail], num_steps, bound, upsample_steps, bg_color, 
+                    depth_, image_, normal_, gradient_error_, curvature_error_ = _run(rays_o[b:b+1, head:tail], rays_d[b:b+1, head:tail], num_steps, bound, upsample_steps, bg_color, 
                                                                 cos_anneal_ratio = cos_anneal_ratio, normal_epsilon_ratio = normal_epsilon_ratio)
       
                     depth[b:b+1, head:tail] = depth_.detach()
@@ -493,16 +511,17 @@ class NeRFRenderer(nn.Module):
                     gradient_error_ = gradient_error_.detach()
                     head += max_ray_batch
 
-                    del depth_, image_, normal_, gradient_error_
+                    del depth_, image_, normal_, gradient_error_, curvature_error_
         else:
-            depth, image, normal, gradient_error = _run(rays_o, rays_d, num_steps, bound, upsample_steps, bg_color, cos_anneal_ratio, normal_epsilon_ratio)
+            depth, image, normal, gradient_error, curvature_error = _run(rays_o, rays_d, num_steps, bound, upsample_steps, bg_color, cos_anneal_ratio, normal_epsilon_ratio)
 
         results = {}
         results['depth'] = depth
         results['rgb'] = image
         results['normal'] = normal
         results['gradient_error'] = gradient_error
-
+        results['curvature_error'] = curvature_error
+        
         return results
 
     def up_sample(self, rays_o, rays_d, z_vals, sdf, n_importance, inv_s):

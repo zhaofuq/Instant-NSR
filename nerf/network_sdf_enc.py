@@ -24,8 +24,9 @@ class NeRFNetwork(NeRFRenderer):
                  weight_norm = True,
                  include_input = True,
                  cuda_ray = False,
+                 curvature_loss = False
                  ):
-        super().__init__(cuda_ray)
+        super().__init__(cuda_ray, curvature_loss)
 
         # sdf network
         self.num_layers = num_layers

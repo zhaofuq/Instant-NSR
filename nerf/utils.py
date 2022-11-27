@@ -298,8 +298,13 @@ class Trainer(object):
         except:
             eikonal_loss = 0.0
 
+        try:
+            curvature_loss = outputs['curvature_error']
+        except:
+            curvature_loss = 0.0
+        
         #loss = self.criterion(pred_rgb, gt_rgb) + 0.1 * eikonal_loss
-        loss = self.criterion(pred_rgb, gt_rgb) + 0.1 * eikonal_loss
+        loss = self.criterion(pred_rgb, gt_rgb) + 0.1 * eikonal_loss + 0.1 * curvature_loss
 
         return pred_rgb, gt_rgb, loss
 
