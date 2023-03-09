@@ -34,21 +34,19 @@ First time running will take some time to compile the CUDA extensions.
 Train your own models, you can run following shell:
 ```bash
 # Instant-NSR Training
-CUDA_VISIBLE_DEVICES=${CUDA_DEVICE} python train_nerf.py "${INPUTS}/dance"  --workspace "${WORKSAPCE}" --downscale 1 --network sdf
+CUDA_VISIBLE_DEVICES=${CUDA_DEVICE} python train_nerf.py "${INPUTS}/dance"  --workspace "${WORKSPACE}" --downscale 1 --network sdf
 ```
 
 Then, you can extract surface from the trained network model by: 
 ```bash
 # Instant-NSR Mesh extraction
-CUDA_VISIBLE_DEVICES=${CUDA_DEVICE} python train_nerf.py "${INPUTS}/dance"  --workspace "${WORKSAPCE}" --downscale 1 --network sdf -mode mesh
-
+CUDA_VISIBLE_DEVICES=${CUDA_DEVICE} python train_nerf.py "${INPUTS}/dance"  --workspace "${WORKSPACE}" --downscale 1 --network sdf -mode mesh
 ```
 
 Or, you can render target view with spefic camera view:
 ```bash
-
 # Instant-NSR Rendering
-CUDA_VISIBLE_DEVICES=${CUDA_DEVICE} python train_nerf.py "${INPUTS}/dance"  --workspace "${WORKSAPCE}" --downscale 1 --network sdf -mode render
+CUDA_VISIBLE_DEVICES=${CUDA_DEVICE} python train_nerf.py "${INPUTS}/dance"  --workspace "${WORKSPACE}" --downscale 1 --network sdf -mode render
 ```
 
 # Results
